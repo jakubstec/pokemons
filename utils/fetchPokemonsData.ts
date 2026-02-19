@@ -1,7 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Pokemon } from './pokemon';
+import { Pokemon } from '../types/pokemon';
 
-const INDEX_KEY = 'pokemon_index_ids';
 export const LIMIT = 100;
 
 function extractId(url: string) {
@@ -9,7 +8,7 @@ function extractId(url: string) {
   return parts.pop() || parts.pop();
 }
 
-export async function fetchAndCachePokemonPage(offset: number) {
+export async function fetchPokemonsWithOffset(offset: number) {
   try {
     const res = await fetch(
       `https://pokeapi.co/api/v2/pokemon?limit=${LIMIT}&offset=${offset}`
@@ -24,31 +23,6 @@ export async function fetchAndCachePokemonPage(offset: number) {
         image: `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${id}.png`,
       };
     });
-
-    const pairs: [string, string][] = newPokemons.map((p: any) => {
-      const storageKey = `pokemon_${p.id}`;
-      const storageValue = JSON.stringify(p);
-      return [storageKey, storageValue];
-    });
-
-    if (pairs.length > 0) {
-      await AsyncStorage.multiSet(pairs);
-    }
-
-    const existingIdsJson = await AsyncStorage.getItem(INDEX_KEY);
-    let existingIds: number[] = [];
-    try {
-      existingIds = existingIdsJson ? JSON.parse(existingIdsJson) : [];
-    } catch (e) {
-      existingIds = [];
-    }
-
-    const newIds = newPokemons.map((p) => p.id);
-
-    const uniqueIds = [...new Set([...existingIds, ...newIds])];
-
-    await AsyncStorage.setItem(INDEX_KEY, JSON.stringify(uniqueIds));
-
     return newPokemons;
   } catch (e) {
     console.error(e);
@@ -77,7 +51,7 @@ export async function getPokemonDescription(id: number): Promise<string> {
     );
 
     const text = entry
-      ? entry.flavor_text.replace(/[\n\f]/g, ' ')
+      ? entry.flavor_text.replace(/[\n]/g, ' ')
       : 'No description available.';
 
     await AsyncStorage.setItem(key, text);

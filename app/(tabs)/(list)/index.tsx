@@ -11,18 +11,19 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import {
-  fetchAndCachePokemonPage,
+  fetchPokemonsWithOffset,
   LIMIT,
-} from '../../../helpers/pokemonStorage';
-import { useCallback, useEffect, useState } from 'react';
-import { Pokemon } from '../../../helpers/pokemon';
+} from '../../../utils/fetchPokemonsData';
+import { useEffect, useState } from 'react';
+import { Pokemon } from '../../../types/pokemon';
+import LoadingSpinner from '../../../components/LoadingSpinner';
 
 const Item = ({ item }: { item: Pokemon }) => {
   const [imgUri, setImgUri] = useState(item.image);
   return (
     <Link
       href={{
-        pathname: '/(tabs)/(list)/[name]',
+        pathname: '/(tabs)/(list)/bottom-sheet',
         params: { name: item.name, image: imgUri, id: item.id },
       }}
       asChild
@@ -54,7 +55,7 @@ export default function ListScreen() {
     if (loading || !hasMore || refreshing) return;
     setLoading(true);
 
-    const newPokemons = (await fetchAndCachePokemonPage(offset)) as Pokemon[];
+    const newPokemons = (await fetchPokemonsWithOffset(offset)) as Pokemon[];
 
     if (newPokemons.length > 0) {
       setPokemons((prev) => [...prev, ...newPokemons]);
@@ -74,7 +75,7 @@ export default function ListScreen() {
     setRefreshing(true);
     setHasMore(true);
 
-    const newPokemons = (await fetchAndCachePokemonPage(0)) as Pokemon[];
+    const newPokemons = (await fetchPokemonsWithOffset(0)) as Pokemon[];
 
     setPokemons(newPokemons);
 
@@ -100,13 +101,7 @@ export default function ListScreen() {
               colors={['#007AFF']}
             />
           }
-          ListFooterComponent={
-            loading ? (
-              <View style={{ padding: 20 }}>
-                <ActivityIndicator size="large" color="#007AFF" />
-              </View>
-            ) : null
-          }
+          ListFooterComponent={loading ? <LoadingSpinner /> : null}
         />
       </View>
     </SafeAreaView>

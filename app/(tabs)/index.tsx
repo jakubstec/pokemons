@@ -1,34 +1,12 @@
-import { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, Image, Pressable } from 'react-native';
+import { useEffect } from 'react';
+import { View, Text, StyleSheet, Pressable } from 'react-native';
+import { Image } from 'expo-image';
 import { useNavigation } from 'expo-router';
-import { useFavourite } from '../../helpers/FavouriteContext';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useFavourite } from '../../context/FavouriteContext';
 
 export default function FavouriteScreen() {
   const { favourite, removeFavouritePokemon } = useFavourite();
-  const [cacheSize, setCacheSize] = useState(0);
   const navigation = useNavigation();
-
-  const getPokemonCachedSize = async () => {
-    try {
-      const value = await AsyncStorage.getItem('pokemon_index_ids');
-      if (value !== null) {
-        const pokemonIndexesList = JSON.parse(value);
-        const size = pokemonIndexesList ? pokemonIndexesList.length : 0;
-        setCacheSize(size);
-      }
-    } catch (e) {
-      console.error(e);
-    }
-  };
-
-  useEffect(() => {
-    const unsubscribe = navigation.addListener('focus', () => {
-      getPokemonCachedSize();
-    });
-
-    return unsubscribe;
-  }, [navigation]);
 
   useEffect(() => {
     navigation.setOptions({
@@ -47,10 +25,6 @@ export default function FavouriteScreen() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.nameDebug}>
-        debug: loaded pokemons into &apos;pokemon_index_ids&apos; key:{' '}
-        {cacheSize}
-      </Text>
       {favourite === null ? (
         <Text style={styles.emptyText}>No favourite yet :(</Text>
       ) : (
@@ -58,7 +32,7 @@ export default function FavouriteScreen() {
           <Image
             source={{ uri: favourite.image }}
             style={styles.image}
-            resizeMode="contain"
+            contentFit="contain"
           />
           <Text style={styles.name}>{favourite.name}</Text>
           <Text style={styles.description}>{favourite.description}</Text>

@@ -1,5 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { PokemonFavourite } from './pokemon';
+import { PokemonFavourite } from '../types/pokemon';
 
 const FAVOURITE_KEY = 'favourite';
 
