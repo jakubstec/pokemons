@@ -13,7 +13,7 @@ export default function TabLayout() {
           tabBarIcon: ({ color }) => (
             <MaterialIcons size={24} name="favorite" color={color} />
           ),
-          headerShown: false,
+          headerShown: true,
         }}
       />
       <Tabs.Screen
@@ -23,7 +23,7 @@ export default function TabLayout() {
           tabBarIcon: ({ color }) => (
             <MaterialIcons size={24} name="list" color={color} />
           ),
-          headerShown: false,
+          headerShown: true,
         }}
       />
       <Tabs.Screen
@@ -33,7 +33,7 @@ export default function TabLayout() {
           tabBarIcon: ({ color }) => (
             <Entypo size={24} name="camera" color={color} />
           ),
-          headerShown: false,
+          headerShown: true,
         }}
       />
       <Tabs.Screen
@@ -43,7 +43,7 @@ export default function TabLayout() {
           tabBarIcon: ({ color }) => (
             <FontAwesome size={24} name="map" color={color} />
           ),
-          headerShown: false,
+          headerShown: true,
         }}
       />
     </Tabs>

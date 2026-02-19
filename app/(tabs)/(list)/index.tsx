@@ -1,68 +1,112 @@
-import { router } from 'expo-router';
+import { Link } from 'expo-router';
 import {
   View,
   Text,
   StyleSheet,
+  ActivityIndicator,
   Image,
   FlatList,
   Pressable,
+  RefreshControl,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import {
+  fetchAndCachePokemonPage,
+  LIMIT,
+} from '../../../helpers/pokemonStorage';
+import { useCallback, useEffect, useState } from 'react';
+import { Pokemon } from '../../../helpers/pokemon';
 
-const pokemons: ItemData[] = [
-  {
-    name: 'Bulbasaur',
-    image:
-      'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/1.png',
-  },
-  {
-    name: 'Charmander',
-    image:
-      'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/4.png',
-  },
-  {
-    name: 'Squirtle',
-    image:
-      'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/7.png',
-  },
-];
-
-type ItemData = {
-  name: string;
-  image: string;
+const Item = ({ item }: { item: Pokemon }) => {
+  const [imgUri, setImgUri] = useState(item.image);
+  return (
+    <Link
+      href={{
+        pathname: '/(tabs)/(list)/[name]',
+        params: { name: item.name, image: imgUri, id: item.id },
+      }}
+      asChild
+    >
+      <Pressable style={styles.pokecontainer}>
+        <Image
+          source={{ uri: imgUri }}
+          style={styles.pokeimage}
+          onError={() =>
+            setImgUri(
+              'https://www.svgrepo.com/show/508699/landscape-placeholder.svg'
+            )
+          }
+        />
+        <Text style={styles.pokename}>{item.name}</Text>
+      </Pressable>
+    </Link>
+  );
 };
-
-type ItemProps = {
-  item: ItemData;
-  onPress: () => void;
-};
-
-const Item = ({ item, onPress }: ItemProps) => (
-  <Pressable onPress={onPress} style={styles.pokecontainer}>
-    <Text style={styles.pokename}>{item.name}</Text>
-    <Image source={{ uri: item.image }} style={styles.pokeimage} />
-  </Pressable>
-);
 
 export default function ListScreen() {
+  const [pokemons, setPokemons] = useState<Pokemon[]>([]);
+  const [offset, setOffset] = useState(0);
+  const [loading, setLoading] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const loadMore = async () => {
+    if (loading || !hasMore || refreshing) return;
+    setLoading(true);
+
+    const newPokemons = (await fetchAndCachePokemonPage(offset)) as Pokemon[];
+
+    if (newPokemons.length > 0) {
+      setPokemons((prev) => [...prev, ...newPokemons]);
+      setOffset((prev) => prev + LIMIT);
+    } else {
+      setHasMore(false);
+    }
+    setLoading(false);
+  };
+
+  // initial loading
+  useEffect(() => {
+    loadMore();
+  }, []);
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    setHasMore(true);
+
+    const newPokemons = (await fetchAndCachePokemonPage(0)) as Pokemon[];
+
+    setPokemons(newPokemons);
+
+    setOffset(LIMIT);
+    setRefreshing(false);
+  };
+
   return (
     <SafeAreaView style={styles.container}>
+      <Text style={styles.headerName}>list size: {pokemons.length}</Text>
       <View style={styles.container}>
-        <Text style={styles.title}>List</Text>
         <FlatList
           data={pokemons}
-          renderItem={({ item }) => (
-            <Item
-              item={item}
-              onPress={() => {
-                router.push({
-                  pathname: '/(tabs)/(list)/[name]',
-                  params: { name: item.name, image: item.image },
-                });
-              }}
+          renderItem={({ item }) => <Item item={item} />}
+          keyExtractor={(item) => item.id.toString()}
+          onEndReached={loadMore}
+          onEndReachedThreshold={0.5}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              tintColor="#007AFF"
+              colors={['#007AFF']}
             />
-          )}
-          keyExtractor={(item) => item.name}
+          }
+          ListFooterComponent={
+            loading ? (
+              <View style={{ padding: 20 }}>
+                <ActivityIndicator size="large" color="#007AFF" />
+              </View>
+            ) : null
+          }
         />
       </View>
     </SafeAreaView>
@@ -72,25 +116,31 @@ export default function ListScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 8,
     alignItems: 'center',
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    textAlign: 'center',
   },
   pokecontainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 8,
+    padding: 12,
+    height: 100,
+    width: 300,
+    borderBottomWidth: 1,
+    borderBottomColor: '#000',
   },
   pokename: {
+    flex: 1,
     fontSize: 18,
-    marginLeft: 8,
+    marginLeft: 12,
+    color: '#000',
   },
   pokeimage: {
     width: 80,
     height: 80,
+  },
+  headerName: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginBottom: 8,
   },
 });
