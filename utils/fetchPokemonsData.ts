@@ -54,7 +54,7 @@ export async function getPokemonDescription(id: number): Promise<string> {
       ? entry.flavor_text.replace(/[\n]/g, ' ')
       : 'No description available.';
 
-    await AsyncStorage.setItem(key, text);
+    await AsyncStorage.setItem(key, JSON.stringify(text));
 
     return text;
   } catch (e) {

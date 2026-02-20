@@ -3,8 +3,6 @@ import {
   View,
   Text,
   StyleSheet,
-  ActivityIndicator,
-  Image,
   FlatList,
   Pressable,
   RefreshControl,
@@ -17,26 +15,25 @@ import {
 import { useEffect, useState } from 'react';
 import { Pokemon } from '../../../types/pokemon';
 import LoadingSpinner from '../../../components/LoadingSpinner';
+import { Image } from 'expo-image';
+
+const blurhash =
+  '|rF?hV%2WCj[ayj[a|j[az_NaeWBj@ayfRayfQfQM{M|azj[azf6fQfQfQIpWXofj[ayj[j[fQayWCoeoeaya}j[ayfQa{oLj?j[WVj[ayayj[fQoff7azayj[ayj[j[ayofayayayj[fQj[ayayj[ayfjj[j[ayjuayj[';
 
 const Item = ({ item }: { item: Pokemon }) => {
-  const [imgUri, setImgUri] = useState(item.image);
   return (
     <Link
       href={{
         pathname: '/(tabs)/(list)/bottom-sheet',
-        params: { name: item.name, image: imgUri, id: item.id },
+        params: { name: item.name, image: item.image, id: item.id },
       }}
       asChild
     >
       <Pressable style={styles.pokecontainer}>
         <Image
-          source={{ uri: imgUri }}
+          source={{ uri: item.image }}
           style={styles.pokeimage}
-          onError={() =>
-            setImgUri(
-              'https://www.svgrepo.com/show/508699/landscape-placeholder.svg'
-            )
-          }
+          placeholder={{ blurhash }}
         />
         <Text style={styles.pokename}>{item.name}</Text>
       </Pressable>
@@ -97,8 +94,8 @@ export default function ListScreen() {
             <RefreshControl
               refreshing={refreshing}
               onRefresh={onRefresh}
-              tintColor="#007AFF"
-              colors={['#007AFF']}
+              tintColor="#707070"
+              colors={['#707070']}
             />
           }
           ListFooterComponent={loading ? <LoadingSpinner /> : null}
