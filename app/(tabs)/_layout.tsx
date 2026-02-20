@@ -21,7 +21,7 @@ export default function TabLayout() {
         options={{
           title: 'List',
           tabBarIcon: ({ color }) => (
-            <MaterialIcons size={24} name="list" color={color} />
+            <Entypo size={24} name="list" color={color} />
           ),
           headerShown: true,
         }}
