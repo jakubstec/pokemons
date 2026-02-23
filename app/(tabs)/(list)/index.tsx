@@ -3,39 +3,37 @@ import {
   View,
   Text,
   StyleSheet,
-  ActivityIndicator,
-  Image,
   FlatList,
   Pressable,
   RefreshControl,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import {
-  fetchAndCachePokemonPage,
+  fetchPokemonsWithOffset,
   LIMIT,
-} from '../../../helpers/pokemonStorage';
-import { useCallback, useEffect, useState } from 'react';
-import { Pokemon } from '../../../helpers/pokemon';
+} from '../../../utils/fetchPokemonsData';
+import { useEffect, useState } from 'react';
+import { Pokemon } from '../../../types/pokemon';
+import LoadingSpinner from '../../../components/LoadingSpinner';
+import { Image } from 'expo-image';
+
+const blurhash =
+  '|rF?hV%2WCj[ayj[a|j[az_NaeWBj@ayfRayfQfQM{M|azj[azf6fQfQfQIpWXofj[ayj[j[fQayWCoeoeaya}j[ayfQa{oLj?j[WVj[ayayj[fQoff7azayj[ayj[j[ayofayayayj[fQj[ayayj[ayfjj[j[ayjuayj[';
 
 const Item = ({ item }: { item: Pokemon }) => {
-  const [imgUri, setImgUri] = useState(item.image);
   return (
     <Link
       href={{
-        pathname: '/(tabs)/(list)/[name]',
-        params: { name: item.name, image: imgUri, id: item.id },
+        pathname: '/(tabs)/(list)/bottom-sheet',
+        params: { name: item.name, image: item.image, id: item.id },
       }}
       asChild
     >
       <Pressable style={styles.pokecontainer}>
         <Image
-          source={{ uri: imgUri }}
+          source={{ uri: item.image }}
           style={styles.pokeimage}
-          onError={() =>
-            setImgUri(
-              'https://www.svgrepo.com/show/508699/landscape-placeholder.svg'
-            )
-          }
+          placeholder={{ blurhash }}
         />
         <Text style={styles.pokename}>{item.name}</Text>
       </Pressable>
@@ -54,7 +52,7 @@ export default function ListScreen() {
     if (loading || !hasMore || refreshing) return;
     setLoading(true);
 
-    const newPokemons = (await fetchAndCachePokemonPage(offset)) as Pokemon[];
+    const newPokemons = (await fetchPokemonsWithOffset(offset)) as Pokemon[];
 
     if (newPokemons.length > 0) {
       setPokemons((prev) => [...prev, ...newPokemons]);
@@ -74,7 +72,7 @@ export default function ListScreen() {
     setRefreshing(true);
     setHasMore(true);
 
-    const newPokemons = (await fetchAndCachePokemonPage(0)) as Pokemon[];
+    const newPokemons = (await fetchPokemonsWithOffset(0)) as Pokemon[];
 
     setPokemons(newPokemons);
 
@@ -96,17 +94,11 @@ export default function ListScreen() {
             <RefreshControl
               refreshing={refreshing}
               onRefresh={onRefresh}
-              tintColor="#007AFF"
-              colors={['#007AFF']}
+              tintColor="#707070"
+              colors={['#707070']}
             />
           }
-          ListFooterComponent={
-            loading ? (
-              <View style={{ padding: 20 }}>
-                <ActivityIndicator size="large" color="#007AFF" />
-              </View>
-            ) : null
-          }
+          ListFooterComponent={loading ? <LoadingSpinner /> : null}
         />
       </View>
     </SafeAreaView>

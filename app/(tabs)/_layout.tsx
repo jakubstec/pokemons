@@ -27,16 +27,6 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="camera"
-        options={{
-          title: 'Camera',
-          tabBarIcon: ({ color }) => (
-            <Entypo size={24} name="camera" color={color} />
-          ),
-          headerShown: true,
-        }}
-      />
-      <Tabs.Screen
         name="map"
         options={{
           title: 'Map',

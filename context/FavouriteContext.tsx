@@ -3,8 +3,8 @@ import {
   loadFavourite,
   saveFavourite,
   removeFavourite,
-} from './favouriteStorage';
-import { PokemonFavourite } from './pokemon';
+} from '../utils/favouriteStorage';
+import { PokemonFavourite } from '../types/pokemon';
 
 type favouriteContextType = {
   favourite: PokemonFavourite | null;
