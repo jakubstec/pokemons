@@ -5,6 +5,7 @@ import { MarkerItem } from '../../types/map';
 import { useFavourite } from '../../context/FavouriteContext';
 import { router } from 'expo-router';
 
+// todo: szwindel z annotacjami bo na markerach nie ma ikonek
 export default function MapScreen() {
   const [markerList, setMarkerList] = useState<MarkerItem[]>([]);
 
@@ -51,12 +52,13 @@ export default function MapScreen() {
             },
             zoom: 16,
           }}
-          onMapClick={handleAddMarker}
+          onMapLongPress={handleAddMarker}
           onMarkerClick={handleMarkerClick}
           markers={markerList.map((m) => ({
             id: m.id,
             coordinates: m.coordinates,
             title: m.pokemonData?.name,
+            icon: m.pokemonData?.image,
           }))}
         />
       </>

@@ -1,0 +1,133 @@
+diff --git a/node_modules/expo-maps/build/apple/AppleMaps.types.d.ts b/node_modules/expo-maps/build/apple/AppleMaps.types.d.ts
+index 1d972f1..94d05f0 100644
+--- a/node_modules/expo-maps/build/apple/AppleMaps.types.d.ts
++++ b/node_modules/expo-maps/build/apple/AppleMaps.types.d.ts
+@@ -395,6 +395,12 @@ export type AppleMapsViewProps = {
+     onMapClick?: (event: {
+         coordinates: Coordinates;
+     }) => void;
++    /**
++     * Lambda invoked when the user long presses on the map.
++     */
++    onMapLongPress?: (event: {
++        coordinates: Coordinates;
++    }) => void;
+     /**
+      * Lambda invoked when the marker is clicked
+      * @platform ios 18.0+
+diff --git a/node_modules/expo-maps/ios/AppleMapsView.swift b/node_modules/expo-maps/ios/AppleMapsView.swift
+index 26be66c..f8de973 100644
+--- a/node_modules/expo-maps/ios/AppleMapsView.swift
++++ b/node_modules/expo-maps/ios/AppleMapsView.swift
+@@ -14,6 +14,7 @@ class AppleMapsViewProps: ExpoSwiftUI.ViewProps {
+   @Field var uiSettings: MapUISettings = MapUISettings()
+   @Field var properties: MapProperties = MapProperties()
+   let onMapClick = EventDispatcher()
++  let onMapLongPress = EventDispatcher()
+   let onMarkerClick = EventDispatcher()
+   let onPolylineClick = EventDispatcher()
+   let onPolygonClick = EventDispatcher()
+diff --git a/node_modules/expo-maps/ios/AppleMapsViewiOS17.swift b/node_modules/expo-maps/ios/AppleMapsViewiOS17.swift
+index 2cb6aae..adfeabe 100644
+--- a/node_modules/expo-maps/ios/AppleMapsViewiOS17.swift
++++ b/node_modules/expo-maps/ios/AppleMapsViewiOS17.swift
+@@ -95,6 +95,25 @@ struct AppleMapsViewiOS17: View, AppleMapsViewProtocol {
+           ])
+         }
+       }
++      .simultaneousGesture(LongPressGesture(minimumDuration: 0.5)
++          .sequenced(before: SpatialTapGesture())
++          .onEnded { value in
++            switch value {
++            case .second(true, let spatialEvent):
++              if let spatialEvent = spatialEvent,
++                 let coordinate = reader.convert(spatialEvent.location, from: .local) {
++                props.onMapLongPress([
++                  "coordinates": [
++                    "latitude": coordinate.latitude,
++                    "longitude": coordinate.longitude
++                  ]
++                ])
++              }
++            default:
++              break
++            }
++          }
++      )
+       .mapControls {
+         if uiSettings.compassEnabled {
+           MapCompass()
+diff --git a/node_modules/expo-maps/ios/AppleMapsViewiOS18.swift b/node_modules/expo-maps/ios/AppleMapsViewiOS18.swift
+index d991b8f..e6bbe6e 100644
+--- a/node_modules/expo-maps/ios/AppleMapsViewiOS18.swift
++++ b/node_modules/expo-maps/ios/AppleMapsViewiOS18.swift
+@@ -116,6 +116,25 @@ struct AppleMapsViewiOS18: View, AppleMapsViewProtocol {
+       // https://developer.apple.com/forums/thread/795909?answerId=855111022#855111022
+       // onTapGesture with Map is broken on iOS 26 so we use this workaround
+       // https://developer.apple.com/documentation/ios-ipados-release-notes/ios-ipados-26-release-notes#Maps
++      .simultaneousGesture(LongPressGesture(minimumDuration: 0.5)
++          .sequenced(before: SpatialTapGesture())
++          .onEnded { value in
++            switch value {
++            case .second(true, let spatialEvent):
++              if let spatialEvent = spatialEvent,
++                 let coordinate = reader.convert(spatialEvent.location, from: .local) {
++                props.onMapLongPress([
++                  "coordinates": [
++                    "latitude": coordinate.latitude,
++                    "longitude": coordinate.longitude
++                  ]
++                ])
++              }
++            default:
++              break
++            }
++          }
++      )
+       .simultaneousGesture(SpatialTapGesture()
+           .onEnded { event in
+             if let coordinate = reader.convert(event.location, from: .local) {
+diff --git a/node_modules/expo-maps/src/apple/AppleMaps.types.ts b/node_modules/expo-maps/src/apple/AppleMaps.types.ts
+index 48beded..d76b106 100644
+--- a/node_modules/expo-maps/src/apple/AppleMaps.types.ts
++++ b/node_modules/expo-maps/src/apple/AppleMaps.types.ts
+@@ -464,6 +464,11 @@ export type AppleMapsViewProps = {
+    */
+   onMapClick?: (event: { coordinates: Coordinates }) => void;
+ 
++  /**
++   * Lambda invoked when the user long presses on the map.
++   */
++  onMapLongPress?: (event: { coordinates: Coordinates }) => void;
++
+   /**
+    * Lambda invoked when the marker is clicked
+    * @platform ios 18.0+
+diff --git a/node_modules/expo-maps/src/apple/AppleMapsView.tsx b/node_modules/expo-maps/src/apple/AppleMapsView.tsx
+index 7edcaf9..ef87ead 100644
+--- a/node_modules/expo-maps/src/apple/AppleMapsView.tsx
++++ b/node_modules/expo-maps/src/apple/AppleMapsView.tsx
+@@ -28,6 +28,7 @@ export const AppleMapsView = React.forwardRef<AppleMapsViewType, AppleMapsViewPr
+   (
+     {
+       onMapClick,
++      onMapLongPress,
+       onMarkerClick,
+       onCameraMove,
+       onPolylineClick,
+@@ -52,6 +53,7 @@ export const AppleMapsView = React.forwardRef<AppleMapsViewType, AppleMapsViewPr
+     }));
+ 
+     const onNativeMapClick = useNativeEvent(onMapClick);
++    const onNativeMapLongPress = useNativeEvent(onMapLongPress);
+     const onNativeMarkerClick = useNativeEvent(onMarkerClick);
+     const onNativeCameraMove = useNativeEvent(onCameraMove);
+     const onNativePolylineClick = useNativeEvent(onPolylineClick);
+@@ -94,6 +96,7 @@ export const AppleMapsView = React.forwardRef<AppleMapsViewType, AppleMapsViewPr
+         circles={parsedCircles}
+         annotations={parsedAnnotations}
+         onMapClick={onNativeMapClick}
++        onMapLongPress={onNativeMapLongPress}
+         onMarkerClick={onNativeMarkerClick}
+         onCameraMove={onNativeCameraMove}
+         onPolylineClick={onNativePolylineClick}
