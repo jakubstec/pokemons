@@ -4,17 +4,11 @@ import { Platform, Text } from 'react-native';
 import { MarkerItem } from '../../types/map';
 import { useFavourite } from '../../context/FavouriteContext';
 import { router } from 'expo-router';
-import {
-  useCameraPermission,
-  useCameraDevice,
-} from 'react-native-vision-camera';
 
 // todo: szwindel z annotacjami bo na markerach nie ma ikonek
 // todo: maybe request location to render map with our current coordinates, not fixed ones
 export default function MapScreen() {
   const [markerList, setMarkerList] = useState<MarkerItem[]>([]);
-  const { hasPermission, requestPermission } = useCameraPermission();
-  const device = useCameraDevice('front');
   const { favourite } = useFavourite();
 
   const handleAddMarker = (event: { coordinates: Coordinates }) => {

@@ -50,7 +50,13 @@
         {
           "cameraPermissionText": "$(PRODUCT_NAME) needs access to your Camera."
         }
-      ]
+      ],
+      ["expo-build-properties",
+    {
+      "android": {
+        "minSdkVersion": 26
+      }
+    }]
     ]
   }
 }
