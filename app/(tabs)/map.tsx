@@ -6,9 +6,9 @@ import { useFavourite } from '../../context/FavouriteContext';
 import { router } from 'expo-router';
 
 // todo: szwindel z annotacjami bo na markerach nie ma ikonek
+
 export default function MapScreen() {
   const [markerList, setMarkerList] = useState<MarkerItem[]>([]);
-
   const { favourite } = useFavourite();
 
   const handleAddMarker = (event: { coordinates: Coordinates }) => {
@@ -58,22 +58,33 @@ export default function MapScreen() {
             id: m.id,
             coordinates: m.coordinates,
             title: m.pokemonData?.name,
-            icon: m.pokemonData?.image,
+            // icon: m.pokemonData?.image,
           }))}
         />
       </>
     );
   } else if (Platform.OS === 'android') {
-    return <GoogleMaps.View style={{ flex: 1 }} />;
+    return (
+      <GoogleMaps.View
+        style={{ flex: 1 }}
+        cameraPosition={{
+          coordinates: {
+            latitude: 50.048765,
+            longitude: 19.965564,
+          },
+          zoom: 16,
+        }}
+        onMapLongClick={handleAddMarker}
+        onMarkerClick={handleMarkerClick}
+        markers={markerList.map((m) => ({
+          id: m.id,
+          coordinates: m.coordinates,
+          title: m.pokemonData?.name,
+          // icon: m.pokemonData?.image as any,
+        }))}
+      />
+    );
   } else {
     return <Text>Maps are only available on Android and iOS</Text>;
   }
 }
-
-// type AppleMapsMarker = {
-//     id?: string;
-//     systemImage?: string;
-//     coordinates?: Coordinates;
-//     title?: string;
-//     tintColor?: string;
-// }
