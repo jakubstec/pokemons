@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { Image } from 'expo-image';
 import { useNavigation } from 'expo-router';
-import { useFavourite } from '../../context/FavouriteContext';
+import { useFavourite } from '../../../context/FavouriteContext';
 
 export default function FavouriteScreen() {
   const { favourite, removeFavouritePokemon } = useFavourite();

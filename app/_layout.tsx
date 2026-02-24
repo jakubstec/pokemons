@@ -10,7 +10,16 @@ export default function RootLayout() {
       <BottomSheetModalProvider>
         <FavouriteProvider>
           <SafeAreaProvider>
-            <Stack screenOptions={{ headerShown: false }} />
+            <Stack screenOptions={{ headerShown: false }}>
+              <Stack.Screen name="(tabs)" />
+              <Stack.Screen
+                name="bottom-sheet"
+                options={{
+                  headerShown: false,
+                  presentation: 'transparentModal',
+                }}
+              />
+            </Stack>
           </SafeAreaProvider>
         </FavouriteProvider>
       </BottomSheetModalProvider>

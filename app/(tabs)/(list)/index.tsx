@@ -12,7 +12,7 @@ import {
   fetchPokemonsWithOffset,
   LIMIT,
 } from '../../../utils/fetchPokemonsData';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Pokemon } from '../../../types/pokemon';
 import LoadingSpinner from '../../../components/LoadingSpinner';
 import { Image } from 'expo-image';
@@ -24,8 +24,8 @@ const Item = ({ item }: { item: Pokemon }) => {
   return (
     <Link
       href={{
-        pathname: '/(tabs)/(list)/bottom-sheet',
-        params: { name: item.name, image: item.image, id: item.id },
+        pathname: '/bottom-sheet',
+        params: { ...item },
       }}
       asChild
     >
@@ -68,7 +68,7 @@ export default function ListScreen() {
     loadMore();
   }, []);
 
-  const onRefresh = async () => {
+  const onRefresh = useCallback(async () => {
     setRefreshing(true);
     setHasMore(true);
 
@@ -78,7 +78,7 @@ export default function ListScreen() {
 
     setOffset(LIMIT);
     setRefreshing(false);
-  };
+  }, []);
 
   return (
     <SafeAreaView style={styles.container}>
