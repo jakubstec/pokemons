@@ -1,4 +1,11 @@
-import { Dimensions, StyleSheet, Text, View, Image } from 'react-native';
+import {
+  Dimensions,
+  StyleSheet,
+  Text,
+  View,
+  Image,
+  Platform,
+} from 'react-native';
 import { useEffect, useRef, useState } from 'react';
 import {
   Camera,
@@ -17,16 +24,23 @@ import { facePosition } from '../../../types/camera';
 import { useFavourite } from '../../../context/FavouriteContext';
 
 export default function App() {
+  const screenWidth = Dimensions.get('window').width;
+  const screenHeight = Dimensions.get('window').height;
+
   const device = useCameraDevice('front');
+
   const faceDetectionOptions = useRef<FrameFaceDetectionOptions>({
     performanceMode: 'fast',
     classificationMode: 'all',
+    landmarkMode: 'all',
+    autoMode: true,
+    windowHeight: screenHeight,
+    windowWidth: screenWidth,
   }).current;
 
   const { detectFaces, stopListeners } = useFaceDetector(faceDetectionOptions);
   const { hasPermission } = useCameraPermission();
   const [facePosition, setFacePosition] = useState<facePosition[]>([]);
-  const screenWidth = Dimensions.get('window').width; // handle mirror view
   const { favourite } = useFavourite();
 
   useEffect(() => {
@@ -38,15 +52,27 @@ export default function App() {
 
   const handleDetectedFaces = Worklets.createRunOnJS((faces: Face[]) => {
     if (faces.length > 0) {
-      console.log(`Detected faces: ${faces.length}, time: ${Date.now()}`);
-      const positions = faces.map((f) => ({
-        x: screenWidth - (f.bounds.x + f.bounds.width / 2),
-        y: f.bounds.y + f.bounds.height / 2,
-        roll: f.rollAngle,
-        yaw: f.yawAngle,
-        pitch: f.pitchAngle,
-        trackingId: f.trackingId,
-      }));
+      console.log('face detected: ', Date.now());
+      const positions = faces.map((f) => {
+        const faceWidth = f.bounds.width;
+        const pokemonSize = faceWidth * 1;
+
+        let centerX = f.bounds.x + f.bounds.width / 2;
+        let centerY = f.bounds.y + f.bounds.height / 2;
+
+        let finalX = centerX;
+        let finalY = centerY - f.bounds.height * 0.7;
+
+        return {
+          x: finalX,
+          y: finalY,
+          roll: f.rollAngle,
+          yaw: f.yawAngle,
+          pitch: f.pitchAngle,
+          trackingId: f.trackingId,
+          size: pokemonSize,
+        };
+      });
       setFacePosition(positions);
     } else {
       setFacePosition([]);
@@ -94,6 +120,7 @@ export default function App() {
         device={device}
         isActive
         frameProcessor={frameProcessor}
+        pixelFormat="yuv"
       />
 
       {facePosition.map((f) => (
@@ -102,8 +129,10 @@ export default function App() {
           style={[
             styles.faceDot,
             {
-              left: f.x - 75,
-              top: f.y - 150,
+              width: f.size,
+              height: f.size,
+              left: f.x - f.size / 2,
+              top: f.y - f.size / 2,
               transform: [{ rotate: `${f.roll}deg` }],
             },
           ]}
@@ -154,10 +183,9 @@ const styles = StyleSheet.create({
   },
   faceDot: {
     position: 'absolute',
-    width: 200,
-    height: 200,
     zIndex: 2,
-    backgroundColor: 'transparent',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   image: {
     flex: 1,

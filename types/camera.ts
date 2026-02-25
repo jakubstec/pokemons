@@ -5,4 +5,5 @@ export type facePosition = {
   yaw: number;
   pitch: number;
   trackingId?: number;
+  size: number;
 };
