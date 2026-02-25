@@ -7,13 +7,13 @@ export default function TabLayout() {
   return (
     <Tabs>
       <Tabs.Screen
-        name="index"
+        name="(favourite)"
         options={{
           title: 'Favourite',
           tabBarIcon: ({ color }) => (
             <MaterialIcons size={24} name="favorite" color={color} />
           ),
-          headerShown: true,
+          headerShown: false,
         }}
       />
       <Tabs.Screen
@@ -21,7 +21,7 @@ export default function TabLayout() {
         options={{
           title: 'List',
           tabBarIcon: ({ color }) => (
-            <MaterialIcons size={24} name="list" color={color} />
+            <Entypo size={24} name="list" color={color} />
           ),
           headerShown: true,
         }}

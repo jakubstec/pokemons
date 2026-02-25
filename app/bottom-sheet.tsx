@@ -1,13 +1,14 @@
 import { router, useLocalSearchParams } from 'expo-router';
 import { StyleSheet, Pressable, Text } from 'react-native';
-import { useFavourite } from '../../../context/FavouriteContext';
+import { useFavourite } from '../context/FavouriteContext';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { getPokemonDescription } from '../../../utils/fetchPokemonsData';
+import { getPokemonDescription } from '../utils/fetchPokemonsData';
 import BottomSheet, { BottomSheetView } from '@gorhom/bottom-sheet';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import LoadingSpinner from '../../../components/LoadingSpinner';
+import LoadingSpinner from '../components/LoadingSpinner';
 import { Image } from 'expo-image';
 
+// todo: wiecej callbaczkow ;]
 export default function DetailScreen() {
   const { name, image, id } = useLocalSearchParams<{
     name: string;
@@ -15,7 +16,7 @@ export default function DetailScreen() {
     id: string;
   }>();
   const { favourite, setFavouritePokemon } = useFavourite();
-  const [description, setDescription] = useState<string | null>(null);
+  const [description, setDescription] = useState<string>();
 
   const snapPoints = useMemo(() => ['60%', '80%'], []);
 
@@ -49,20 +50,21 @@ export default function DetailScreen() {
     });
   };
 
+  const goBack = useCallback(() => {
+    router.back();
+  }, [router]);
+
   const imageSource = image
     ? { uri: image as string }
     : { uri: 'https://www.svgrepo.com/show/508699/landscape-placeholder.svg' };
   return (
     <GestureHandlerRootView style={styles.rootContainer}>
-      <Pressable
-        style={StyleSheet.absoluteFill}
-        onPress={() => router.back()}
-      />
+      <Pressable style={StyleSheet.absoluteFill} onPress={goBack} />
 
       <BottomSheet
         snapPoints={snapPoints}
         onChange={handleSheetChanges}
-        enablePanDownToClose={true}
+        enablePanDownToClose
         index={2}
       >
         <BottomSheetView style={styles.contentContainer}>
@@ -96,6 +98,7 @@ export default function DetailScreen() {
 const styles = StyleSheet.create({
   rootContainer: {
     flex: 1,
+    backgroundColor: 'transparent',
   },
   container: {
     flex: 1,

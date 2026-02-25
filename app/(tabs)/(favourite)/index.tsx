@@ -2,7 +2,8 @@ import { useEffect } from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { Image } from 'expo-image';
 import { useNavigation } from 'expo-router';
-import { useFavourite } from '../../context/FavouriteContext';
+import { useFavourite } from '../../../context/FavouriteContext';
+import CameraButton from '../../../components/CameraButton';
 
 export default function FavouriteScreen() {
   const { favourite, removeFavouritePokemon } = useFavourite();
@@ -25,6 +26,7 @@ export default function FavouriteScreen() {
 
   return (
     <View style={styles.container}>
+      <CameraButton />
       {favourite === null ? (
         <Text style={styles.emptyText}>No favourite yet :(</Text>
       ) : (
